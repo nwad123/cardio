@@ -18,4 +18,4 @@ ref-ops = "0.2.5"
 
 [lib]
 name = "cardio"
-crate-type = ["cdylib"]
+crate-type = ["lib", "cdylib"]

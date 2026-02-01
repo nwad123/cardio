@@ -4,6 +4,7 @@ use crate::matrix::CheckableNumber;
 use crate::property::{Interval, PathFormula, ProbabilityQueryType, StateFormula};
 
 #[derive(Logos, Debug, PartialEq, Clone)]
+#[logos(skip r"[ \t\n\f]+")]
 pub enum Token {
 	#[regex(r"true")]
 	True,
@@ -11,7 +12,7 @@ pub enum Token {
 	False,
 	#[regex(r"[0-9]+", |lex| lex.slice().parse::<i64>().unwrap())]
 	Integer(i64),
-	#[regex(r"[0-9]+\.[0-9]*", |lex| lex.slice().parse::<f64>().unwrap())]
+	#[regex(r"[0-9]*\.[0-9]*", |lex| lex.slice().parse::<f64>().unwrap())]
 	Float(f64),
 	#[token("+")]
 	Plus,
@@ -46,6 +47,9 @@ pub enum Token {
 	// String label
 	#[regex(r#""([^"]*)""#, |lex| lex.slice().to_string())]
 	StringLabel(String),
+	// Colon For Labels
+	#[token(":")]
+	Colon,
 
 	// Boolean (state-formula) tokens
 	#[token("!")]
@@ -64,6 +68,10 @@ pub enum Token {
 	LBracket,
 	#[token("]")]
 	RBracket,
+	#[token("{")]
+	LBrace,
+	#[token("}")]
+	RBrace,
 
 	/// The comma token only appears in intervals
 	#[token(",")]
@@ -88,14 +96,42 @@ pub enum Token {
 	#[token("U")]
 	/// A state formula holds until another state formula takes over
 	Until,
+
+	// Ignore Comments in the file
+	#[regex(r"//.*", logos::skip)]
+	CommentLine,
 }
 
+/// Transforms a string into tokens
 pub fn lex(input: &str) -> Vec<Token> {
 	let mut lexer = Token::lexer(input);
 	let mut tokens = Vec::new();
 
-	while let Some(Ok(token)) = lexer.next() {
-		tokens.push(token);
+	while let Some(result) = lexer.next() {
+		match result {
+			Ok(token) => {
+                tokens.push(token)
+			}
+			Err(_) => {
+				let range = lexer.span();
+				let start = range.start;
+
+				let line_number = input[..start].matches('\n').count() + 1;
+				let line_start = input[..start].rfind('\n').map(|i| i + 1).unwrap_or(0);
+				let line_end = input[start..]
+					.find('\n')
+					.map(|i| start + i)
+					.unwrap_or(input.len());
+				let current_line = &input[line_start..line_end];
+
+				panic!(
+					"Syntax error at line {}: Could not lex '{}'.\nLine: {}",
+					line_number,
+					lexer.slice(),
+					current_line
+				);
+			}
+		}
 	}
 
 	tokens
