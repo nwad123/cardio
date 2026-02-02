@@ -1,8 +1,8 @@
-use cardio::parser::*;
-use cardio::property::*;
+use crate::parser::*;
+use crate::property::*;
 
 #[cfg(test)]
-mod lex_tests {
+mod tests {
     use super::*;
 
     #[test]
@@ -72,5 +72,4 @@ mod lex_tests {
         assert_eq!(lex("P S"), vec![Token::ProbabilityQuery, Token::SteadyStateQuery]);
         assert_eq!(lex("G X U"), vec![Token::Globally, Token::Next, Token::Until]);
     }
-
 }
