@@ -137,6 +137,23 @@ pub fn lex(input: &str) -> Vec<Token> {
 	tokens
 }
 
+// Parses a slice of tokens into a list of state formulas
+pub fn parse(tokens: &[Token]) -> Vec<StateFormula>
+{
+    let mut it = tokens.iter().peekable();
+    
+    while let Some(Token) = it.next() {
+        let next_token = it.peek();
+
+        match next_token {
+            Some(Token::ProbabilityQuery) | Some(Token::SteadyStateQuery) => { unimplemented!(); }
+            _ => { unimplemented!(); }
+        }
+    }
+
+    vec![]
+}
+
 pub fn parse_interval<'a, I>(iter: &mut std::iter::Peekable<I>) -> Result<Interval, String>
 where
 	I: Iterator<Item = &'a Token>,
