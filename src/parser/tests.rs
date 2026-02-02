@@ -55,4 +55,11 @@ mod tests {
         let input = "//Comment followed by letters\nabc";
         let _tokens = lex(input);
     }
+
+    #[test]
+    #[should_panic]
+    fn invalid_string() {
+        let input = "\"This string is unterminated!";
+        let _tokens = lex(input);
+    }
 }
